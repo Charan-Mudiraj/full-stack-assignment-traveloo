@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="./profile.css" />
+  </head>
+  <body>
+    <button onclick="toggleView()" id="view-btn">View</button>
+    <div id="main-div">
+      <div id="name-div">
+        <label>Name</label>
+        <br />
+        <input type="text" id="username" />
+      </div>
+      <div id="photo-drop-div">
+        <label for="avatar">Photo</label>
+        <br />
+        <input type="file" name="avatar" accept="image/*" id="avatar" />
+      </div>
+      <button type="submit" onclick="sendUserDetails()">Upload</button>
+    </div>
+    <div id="slider">
+      <button onclick="toggleView()" id="back-btn">Back</button>
+      <div id="slider-content">
+        <div>
+          <label>Name</label>
+          <div id="sc-name">
+            <p id="username-element"></p>
+          </div>
+        </div>
+        <div>
+          <label>Photo</label>
+          <div id="image-div"></div>
+        </div>
+
+        <p id="status">Not Accepted by Admin</p>
+      </div>
+    </div>
+    <script>
+      const searchParams = new URLSearchParams(window.location.search);
+      const userID = searchParams.get("userID");
+      fetch(`/user/avatar?userID=${userID}`)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const objectURL = URL.createObjectURL(blob);
+          const imageElement = document.createElement("img");
+          imageElement.src = objectURL;
+          const imageDiv = document.getElementById("image-div");
+          imageDiv.appendChild(imageElement);
+        })
+        .catch((e) => console.log("error fetching image"));
+      fetch(`/user/user-details?userID=${userID}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const user = data.user;
+          const username = user.name;
+          const element = document.getElementById("username-element");
+          element.innerHTML = username;
+          const status = document.getElementById("status");
+          if (user.isApproved) {
+            status.innerHTML = "Approved by Admin";
+            status.style.color = "green";
+          } else {
+            status.style.color = "red";
+          }
+        });
+
+      async function sendUserDetails() {
+        const username = document.getElementById("username").value;
+        const imageInput = document.getElementById("avatar");
+        const file = imageInput.files[0];
+        const formData = new FormData();
+        formData.append("avatar", file);
+        const res = await fetch(
+          `/user/update-user?userID=${userID}&username=${username}`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+        const data = await res.json();
+        alert(data.message);
+        window.location.reload();
+      }
+      function toggleView() {
+        const slider = document.getElementById("slider");
+        slider.classList.toggle("closed");
+      }
+    </script>
+  </body>
+</html>

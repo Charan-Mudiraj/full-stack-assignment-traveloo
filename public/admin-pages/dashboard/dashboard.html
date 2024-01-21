@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="./dashboard.css" />
+  </head>
+  <body>
+    <div id="left">
+      <div class="title">Create User</div>
+      <div id="content">
+        <div>
+          <label>User ID</label>
+          <br />
+          <input type="text" id="userID" />
+        </div>
+        <div>
+          <label>Password</label>
+          <br />
+          <input type="text" id="user-password" />
+        </div>
+        <button onclick="addUser()">Submit</button>
+      </div>
+    </div>
+    <div id="right">
+      <div class="title">View User</div>
+      <div id="right-content">
+        <div id="user-updates"></div>
+        <form action="/admin/view" method="get">
+          <button type="submit">View</button>
+        </form>
+      </div>
+    </div>
+    <script>
+      const searchParams = new URLSearchParams(window.location.search);
+      fetch("/admin/user-updates")
+        .then((res) => res.json())
+        .then((users) => {
+          const usersDiv = document.getElementById("user-updates");
+          for (let i = 0; i < users.length && i < 2; i++) {
+            const outerDiv = document.createElement("div");
+            const innerDiv = document.createElement("div");
+            innerDiv.innerHTML = users[i].userID;
+            outerDiv.appendChild(innerDiv);
+            usersDiv.appendChild(outerDiv);
+          }
+        });
+      async function addUser() {
+        const adminID = searchParams.get("adminID");
+        const payload = {
+          userID: document.getElementById("userID").value,
+          password: document.getElementById("user-password").value,
+        };
+        const res = await fetch("/admin/add-user?adminID=" + adminID, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        alert(data.message);
+      }
+    </script>
+  </body>
+</html>
