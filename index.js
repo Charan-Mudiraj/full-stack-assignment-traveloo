@@ -16,6 +16,9 @@ app.use("/admin", adminRoutes);
 app.use("/user", userRoutes);
 app.use(express.static(path.join(__dirname, "public")));
 
+app.get("/", (req, res) => {
+  res.send("landing pagr");
+});
 app.listen(process.env.PORT, () => {
   console.log("Listening on Port: 3000");
 });
